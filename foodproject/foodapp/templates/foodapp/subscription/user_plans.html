@@ -1,0 +1,472 @@
+{% extends "foodapp/base.html" %}
+{% load static %}
+
+{% block title %}Plans d'abonnement Utilisateur | FoodFlex{% endblock %}
+{% block page_title %}Plans d'abonnement Utilisateur{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pricing-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .pricing-header h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 15px;
+    }
+    
+    .pricing-header p {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
+        max-width: 800px;
+        margin: 20px auto;
+        line-height: 1.6;
+    }
+    
+    .pricing-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 50px;
+        animation: fadeIn 0.8s ease-out 0.2s backwards;
+    }
+    
+    .pricing-toggle {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+        padding: 5px;
+        display: inline-flex;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pricing-toggle-button {
+        padding: 12px 25px;
+        border-radius: 25px;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-weight: 600;
+        z-index: 1;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .pricing-toggle-button.active {
+        color: #fff;
+    }
+    
+    .pricing-toggle-slider {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        height: calc(100% - 10px);
+        width: calc(50% - 10px);
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        border-radius: 25px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    .pricing-toggle-slider.yearly {
+        transform: translateX(100%);
+    }
+    
+    .save-text {
+        display: inline-block;
+        background-color: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+        margin-left: 10px;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .pricing-plans-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        animation: fadeIn 0.8s ease-out 0.4s backwards;
+    }
+    
+    .pricing-plan-card {
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        max-width: 350px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .pricing-plan-card.featured {
+        transform: translateY(-15px) scale(1.05);
+        border: 2px solid transparent;
+        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+                    linear-gradient(135deg, #FF6B6B, #FF8E53) border-box;
+        z-index: 1;
+    }
+    
+    .pricing-plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+    
+    .pricing-plan-card.featured:hover {
+        transform: translateY(-20px) scale(1.05);
+    }
+    
+    .pricing-plan-header {
+        padding: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        text-align: center;
+    }
+    
+    .plan-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    .plan-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #fff, #ddd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .plan-price {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 20px 0;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .currency {
+        font-size: 1.5rem;
+        margin-right: 5px;
+        align-self: flex-start;
+        margin-top: 8px;
+    }
+    
+    .period {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 5px;
+        align-self: flex-end;
+    }
+    
+    .plan-button {
+        display: block;
+        width: 90%;
+        margin: 0 auto 25px;
+        padding: 16px 25px;
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .plan-button:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .plan-button:hover:before {
+        left: 100%;
+    }
+    
+    .plan-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
+    }
+    
+    .plan-button:active {
+        transform: translateY(1px);
+    }
+    
+    .plan-description {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+    
+    .plan-features {
+        list-style: none;
+        padding: 20px 30px;
+        margin: 0;
+    }
+    
+    .plan-features li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+    }
+    
+    .plan-features li:before {
+        content: '✓';
+        color: #2ecc71;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+    
+    .plan-features li.unavailable {
+        color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .plan-features li.unavailable:before {
+        content: '✕';
+        color: #e74c3c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-content">
+    <div class="breadcrumb">
+        <a href="{% url 'accueil' %}">Accueil</a>
+        <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+        <span>Plans d'abonnement utilisateur</span>
+    </div>
+
+    <!-- Instruction Section -->
+    <div class="instruction-section" style="background:rgba(255,255,255,0.07);border-radius:12px;padding:24px 20px;margin:30px 0 40px 0;text-align:center;">
+        <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:10px;">Choisissez votre plan d'abonnement</h2>
+        <p style="font-size:1.1rem;margin-bottom:10px;">
+            <strong>Free</strong> : Accès de base gratuit pour découvrir la plateforme.<br>
+            <strong>Premium</strong> : Plus d'avantages, fonctionnalités avancées, et accès prioritaire.<br>
+            <strong>Ultra</strong> : Expérience complète avec tous les avantages, contenus exclusifs et support prioritaire.<br>
+        </p>
+        <p style="margin-bottom:0.5em;">Sélectionnez le plan qui vous convient. Pour les plans Premium et Ultra, le paiement sécurisé sera demandé à l'étape suivante.</p>
+        <p style="font-size:0.95rem;color:#aaa;">Vous pouvez changer de plan à tout moment depuis votre profil utilisateur.</p>
+    </div>
+    <!-- End Instruction Section -->
+    
+    <div class="pricing-header">
+        <h1>Améliorez Votre Expérience Culinaire</h1>
+        <p>Découvrez des avantages exclusifs pour les véritables amateurs de cuisine marocaine</p>
+        
+        <div class="pricing-tabs">
+            <div class="pricing-toggle">
+                <div id="pricing-toggle-slider" class="pricing-toggle-slider"></div>
+                <button id="monthly-toggle" class="pricing-toggle-button active">Mensuel</button>
+                <button id="yearly-toggle" class="pricing-toggle-button">Annuel <span class="save-text">-20%</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="pricing-plans-container">
+        {% for plan in plans %}
+        <div class="pricing-plan-card {% if plan.is_featured %}featured{% endif %}">
+            {% if plan.is_featured %}
+                <div class="plan-badge">Recommandé</div>
+            {% endif %}
+            
+            <div class="pricing-plan-header">
+                <h3 class="plan-name">{{ plan.name }}</h3>
+                <p class="plan-description">{{ plan.description }}</p>
+                <div class="plan-price">
+                    <span class="currency">MAD</span>{{ plan.price }}<span class="period">/mois</span>
+                </div>
+                
+                {% if current_plan and current_plan.id == plan.id %}
+                    <div class="current-plan-badge">Votre plan actuel</div>
+                {% endif %}
+            </div>
+            
+            <ul class="plan-features">
+                {% for feature_name, feature_value in plan.features.items %}
+                    {% if feature_value %}
+                        <li>
+                            {% if feature_name == 'notifications' %}
+                                Notifications personnalisées
+                            {% elif feature_name == 'priority_booking' %}
+                                Réservation prioritaire
+                            {% elif feature_name == 'discount_access' %}
+                                Accès aux promotions exclusives
+                            {% elif feature_name == 'premium_content' %}
+                                Contenu premium
+                            {% else %}
+                                {{ feature_name }}: {{ feature_value }}
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <li class="unavailable">
+                            {% if feature_name == 'notifications' %}
+                                Notifications personnalisées
+                            {% elif feature_name == 'priority_booking' %}
+                                Réservation prioritaire
+                            {% elif feature_name == 'discount_access' %}
+                                Accès aux promotions exclusives
+                            {% elif feature_name == 'premium_content' %}
+                                Contenu premium
+                            {% else %}
+                                {{ feature_name }}
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+                
+                <div class="plan-footer">
+                    {% if current_plan and current_plan.id == plan.id %}
+                        <button class="plan-button" disabled>Plan actuel</button>
+                    {% elif plan.name == 'Free' %}
+                        <a href="{% url 'subscription_checkout' plan_type='user' plan_id=plan.id %}" class="plan-button">
+                            Commencer gratuitement
+                        </a>
+                    {% else %}
+                        <a href="{% url 'subscription_checkout' plan_type='user' plan_id=plan.id %}" class="plan-button {% if plan.is_featured %}primary{% endif %}">
+                            {% if request.user.is_authenticated %}
+                                Choisir ce plan
+                            {% else %}
+                                Connectez-vous pour continuer
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="benefits-section">
+        <div class="benefits-header">
+            <h2>Pourquoi devenir un FoodLover ?</h2>
+        </div>
+        
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <h3 class="benefit-title">Favoris Illimités</h3>
+                <p class="benefit-description">Enregistrez autant de restaurants et plats favoris que vous souhaitez pour les retrouver facilement.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-percent"></i>
+                </div>
+                <h3 class="benefit-title">Réductions Exclusives</h3>
+                <p class="benefit-description">Accédez à des offres spéciales et bénéficiez de remises exclusives dans les restaurants partenaires.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <h3 class="benefit-title">Réservation Prioritaire</h3>
+                <p class="benefit-description">Réservez les meilleurs tables avant tout le monde, même dans les restaurants les plus populaires.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle pour le cycle de facturation (mensuel/annuel)
+        const monthlyToggle = document.getElementById('monthly-toggle');
+        const yearlyToggle = document.getElementById('yearly-toggle');
+        const toggleSlider = document.getElementById('pricing-toggle-slider');
+        const monthlyPrices = document.querySelectorAll('.monthly-price');
+        const yearlyPrices = document.querySelectorAll('.yearly-price');
+        
+        monthlyToggle.addEventListener('click', function() {
+            monthlyToggle.classList.add('active');
+            yearlyToggle.classList.remove('active');
+            toggleSlider.classList.remove('yearly');
+            
+            // Afficher les prix mensuels
+            monthlyPrices.forEach(price => price.style.display = 'block');
+            yearlyPrices.forEach(price => price.style.display = 'none');
+            
+            // Mettre à jour les URLs des boutons
+            updateCheckoutUrls('monthly');
+        });
+        
+        yearlyToggle.addEventListener('click', function() {
+            yearlyToggle.classList.add('active');
+            monthlyToggle.classList.remove('active');
+            toggleSlider.classList.add('yearly');
+            
+            // Afficher les prix annuels
+            monthlyPrices.forEach(price => price.style.display = 'none');
+            yearlyPrices.forEach(price => price.style.display = 'block');
+            
+            // Mettre à jour les URLs des boutons
+            updateCheckoutUrls('yearly');
+        });
+        
+        // Fonction pour mettre à jour les URLs des boutons de checkout
+        function updateCheckoutUrls(billingCycle) {
+            const checkoutButtons = document.querySelectorAll('.plan-button');
+            
+            checkoutButtons.forEach(button => {
+                if (button.href && button.href.includes('checkout')) {
+                    // Extrait l'URL de base
+                    const baseUrl = button.href.split('?')[0];
+                    button.href = `${baseUrl}?billing=${billingCycle}`;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
